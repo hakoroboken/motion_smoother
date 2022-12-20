@@ -8,7 +8,10 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checking out
-        uses: actions/checkout@v2.3.4
-      - name: Building and testing
-        uses: ichiro-its/ros2-ci@v1.0.0
+      - uses: ros-tooling/setup-ros@v0.3
+        with:
+          required-ros-distributions: humble
+      - uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          package-name: motion_smoother
+          target-ros2-distro: humble
