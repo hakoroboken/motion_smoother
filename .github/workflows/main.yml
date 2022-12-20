@@ -1,9 +1,9 @@
 name: Workflows Test
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   push:
-    branches: [ master ]
+    branches: [ main ]
 jobs:
   workflows-test:
     runs-on: ubuntu-latest
