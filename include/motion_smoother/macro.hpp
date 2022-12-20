@@ -1,0 +1,1 @@
+#define RESET_TWIST geometry_msgs::msg::Twist()
