@@ -69,7 +69,7 @@ class motion_smoother : public rclcpp::Node
     double vec = 0;
 
     // linear x
-    if(linearxPr == true){
+    if(linearxPr){
       vec = target.linear.x - histry.linear.x;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
@@ -88,7 +88,7 @@ class motion_smoother : public rclcpp::Node
     }
 
     // linear y
-    if(linearyPr == true){
+    if(linearyPr){
       vec = target.linear.y - histry.linear.y;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
@@ -106,7 +106,7 @@ class motion_smoother : public rclcpp::Node
     }
     
     // linear z
-    if(linearzPr == true){
+    if(linearzPr){
       vec = target.linear.z - histry.linear.z;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
@@ -123,7 +123,7 @@ class motion_smoother : public rclcpp::Node
     }
     
     // angular x
-    if(angularxPr = true){
+    if(angularxPr){
     vec = target.angular.x - histry.angular.x;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
@@ -141,7 +141,7 @@ class motion_smoother : public rclcpp::Node
     }
 
     // angular y
-    if(angularyPr == true){
+    if(angularyPr){
     vec = target.angular.y - histry.angular.y;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
@@ -158,7 +158,7 @@ class motion_smoother : public rclcpp::Node
     }
 
     // angular z
-    if(angularzPr == true){
+    if(angularzPr){
     vec = target.angular.z - histry.angular.z;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
