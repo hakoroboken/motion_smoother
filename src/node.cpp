@@ -177,6 +177,12 @@ class motion_smoother : public rclcpp::Node
 
     pub_vel->publish(rtVec);
   }
+  bool linear.x_p;
+  bool linear.y_p;
+  bool linear.z_p;
+  bool angular.x_p;
+  bool angular.y_p;
+  bool angular.z_p;
 };
 
 int main(int argc , char * argv[])
