@@ -16,8 +16,20 @@ class motion_smoother : public rclcpp::Node
   motion_smoother() : Node("motion_smoother")
   {
     this->declare_parameter<double>("gain" , 1.0);
+    this->declare_parameter<bool>("linearxPr", true);
+    this->declare_parameter<bool>("linearyPr", true);
+    this->declare_parameter<bool>("linearzPr", true);
+    this->declare_parameter<bool>("angularxPr", true);
+    this->declare_parameter<bool>("angularyPr", true);
+    this->declare_parameter<bool>("angularzPr", true);
     
     this->get_parameter("gain" , param_gain);
+    this->get_parameter("linearxPr" , linearxPr);
+    this->get_parameter("linearyPr" , linearyPr);
+    this->get_parameter("linearzPr" , linearzPr);
+    this->get_parameter("angularxPr" , angularxPr);
+    this->get_parameter("angularyPr" , angularyPr);
+    this->get_parameter("angularzPr" , angularzPr);
 
     sub_vel = this->create_subscription<geometry_msgs::msg::Twist>(
       "/cmd_vel/in" , 10 , std::bind(&motion_smoother::topic_callback , this , _1)
@@ -57,7 +69,8 @@ class motion_smoother : public rclcpp::Node
     double vec = 0;
 
     // linear x
-    vec = target.linear.x - histry.linear.x;
+    if(linearxPr){
+      vec = target.linear.x - histry.linear.x;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
       if(target.linear.x > histry.linear.x){
@@ -72,8 +85,11 @@ class motion_smoother : public rclcpp::Node
 
     histry.linear.x = rtVec.linear.x;
 
+    }
+
     // linear y
-    vec = target.linear.y - histry.linear.y;
+    if(linearyPr){
+      vec = target.linear.y - histry.linear.y;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
       if(target.linear.y > histry.linear.y){
@@ -87,8 +103,11 @@ class motion_smoother : public rclcpp::Node
     }
     histry.linear.y = rtVec.linear.y;
 
+    }
+    
     // linear z
-    vec = target.linear.z - histry.linear.z;
+    if(linearzPr){
+      vec = target.linear.z - histry.linear.z;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
       if(target.linear.z > histry.linear.z){
@@ -101,14 +120,17 @@ class motion_smoother : public rclcpp::Node
       rtVec.linear.z = target.linear.z;
     }
     histry.linear.z = rtVec.linear.z;
-
+    }
+    
     // angular x
+    if(angularxPr){
     vec = target.angular.x - histry.angular.x;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
       if(target.angular.x > histry.angular.x){
         rtVec.angular.x = histry.angular.x + param_gain;
-      }else{
+      }
+      else{
         rtVec.angular.x = histry.angular.x - param_gain;
       }
 
@@ -116,8 +138,10 @@ class motion_smoother : public rclcpp::Node
       rtVec.angular.x = target.angular.x;
     }
     histry.angular.x = rtVec.angular.x;
+    }
 
     // angular y
+    if(angularyPr){
     vec = target.angular.y - histry.angular.y;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
@@ -131,8 +155,10 @@ class motion_smoother : public rclcpp::Node
       rtVec.angular.y = target.angular.y;
     }
     histry.angular.y = rtVec.angular.y;
+    }
 
     // angular z
+    if(angularzPr){
     vec = target.angular.z - histry.angular.z;
     vec = std::sqrt(vec * vec);
     if(vec > param_gain){
@@ -146,10 +172,17 @@ class motion_smoother : public rclcpp::Node
       rtVec.angular.z = target.angular.z;
     }
     histry.angular.z = rtVec.angular.z;
+    }
 
 
     pub_vel->publish(rtVec);
   }
+  bool linearxPr;
+  bool linearyPr;
+  bool linearzPr;
+  bool angularxPr;
+  bool angularyPr;
+  bool angularzPr;
 };
 
 int main(int argc , char * argv[])
