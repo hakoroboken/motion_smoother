@@ -12,41 +12,40 @@ using namespace std::chrono_literals;
 
 class motion_smoother : public rclcpp::Node
 {
-  public:
+public:
   motion_smoother() : Node("motion_smoother")
   {
-    this->declare_parameter<double>("gain" , 1.0);
+    this->declare_parameter<double>("gain", 1.0);
     this->declare_parameter<bool>("linearxPr", true);
     this->declare_parameter<bool>("linearyPr", true);
     this->declare_parameter<bool>("linearzPr", true);
     this->declare_parameter<bool>("angularxPr", true);
     this->declare_parameter<bool>("angularyPr", true);
     this->declare_parameter<bool>("angularzPr", true);
-    
-    this->get_parameter("gain" , param_gain);
-    this->get_parameter("linearxPr" , linearxPr);
-    this->get_parameter("linearyPr" , linearyPr);
-    this->get_parameter("linearzPr" , linearzPr);
-    this->get_parameter("angularxPr" , angularxPr);
-    this->get_parameter("angularyPr" , angularyPr);
-    this->get_parameter("angularzPr" , angularzPr);
+    this->declare_parameter<int>("milli_clock", 10);
+
+    this->get_parameter("gain", param_gain);
+    this->get_parameter("linearxPr", linearxPr);
+    this->get_parameter("linearyPr", linearyPr);
+    this->get_parameter("linearzPr", linearzPr);
+    this->get_parameter("angularxPr", angularxPr);
+    this->get_parameter("angularyPr", angularyPr);
+    this->get_parameter("angularzPr", angularzPr);
+    this->get_parameter("milli_clock", milli_clock_param);
 
     sub_vel = this->create_subscription<geometry_msgs::msg::Twist>(
-      "/cmd_vel/in" , 10 , std::bind(&motion_smoother::topic_callback , this , _1)
-    );
+        "/cmd_vel/in", 10, std::bind(&motion_smoother::topic_callback, this, _1));
 
-    pub_vel = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel/out" , 10);
+    pub_vel = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel/out", 10);
 
-    timer = this->create_wall_timer(20ms , [this](){
-      this->timer_callback();
-    });
+    timer = this->create_wall_timer(milli_clock_param * 1ms, [this]()
+                                    { this->timer_callback(); });
 
     target = RESET_TWIST;
     histry = RESET_TWIST;
   }
 
-  private:
-
+private:
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_vel;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_vel;
   rclcpp::TimerBase::SharedPtr timer;
@@ -55,125 +54,159 @@ class motion_smoother : public rclcpp::Node
   geometry_msgs::msg::Twist histry;
 
   double param_gain = 0.0;
-
+  int milli_clock_param = 0;
 
   void
-  topic_callback(const geometry_msgs::msg::Twist::SharedPtr get_msg){
+  topic_callback(const geometry_msgs::msg::Twist::SharedPtr get_msg)
+  {
     target.linear = get_msg->linear;
     target.angular = get_msg->angular;
   }
 
   void
-  timer_callback(){
+  timer_callback()
+  {
     auto rtVec = RESET_TWIST;
     double vec = 0;
 
     // linear x
-    if(linearxPr){
+    if (linearxPr)
+    {
       vec = target.linear.x - histry.linear.x;
-    vec = std::sqrt(vec * vec);
-    if(vec > param_gain){
-      if(target.linear.x > histry.linear.x){
-        rtVec.linear.x = histry.linear.x + param_gain;
-      }else{
-        rtVec.linear.x = histry.linear.x - param_gain;
+      vec = std::sqrt(vec * vec);
+      if (vec > param_gain)
+      {
+        if (target.linear.x > histry.linear.x)
+        {
+          rtVec.linear.x = histry.linear.x + param_gain;
+        }
+        else
+        {
+          rtVec.linear.x = histry.linear.x - param_gain;
+        }
+      }
+      else
+      {
+        rtVec.linear.x = target.linear.x;
       }
 
-    }else{
-      rtVec.linear.x = target.linear.x;
-    }
-
-    histry.linear.x = rtVec.linear.x;
-
+      histry.linear.x = rtVec.linear.x;
     }
 
     // linear y
-    if(linearyPr){
+    if (linearyPr)
+    {
       vec = target.linear.y - histry.linear.y;
-    vec = std::sqrt(vec * vec);
-    if(vec > param_gain){
-      if(target.linear.y > histry.linear.y){
-        rtVec.linear.y = histry.linear.y + param_gain;
-      }else{
-        rtVec.linear.y = histry.linear.y - param_gain;
+      vec = std::sqrt(vec * vec);
+      if (vec > param_gain)
+      {
+        if (target.linear.y > histry.linear.y)
+        {
+          rtVec.linear.y = histry.linear.y + param_gain;
+        }
+        else
+        {
+          rtVec.linear.y = histry.linear.y - param_gain;
+        }
       }
-
-    }else{
-      rtVec.linear.y = target.linear.y;
+      else
+      {
+        rtVec.linear.y = target.linear.y;
+      }
+      histry.linear.y = rtVec.linear.y;
     }
-    histry.linear.y = rtVec.linear.y;
 
-    }
-    
     // linear z
-    if(linearzPr){
+    if (linearzPr)
+    {
       vec = target.linear.z - histry.linear.z;
-    vec = std::sqrt(vec * vec);
-    if(vec > param_gain){
-      if(target.linear.z > histry.linear.z){
-        rtVec.linear.z = histry.linear.z + param_gain;
-      }else{
-        rtVec.linear.z = histry.linear.z - param_gain;
+      vec = std::sqrt(vec * vec);
+      if (vec > param_gain)
+      {
+        if (target.linear.z > histry.linear.z)
+        {
+          rtVec.linear.z = histry.linear.z + param_gain;
+        }
+        else
+        {
+          rtVec.linear.z = histry.linear.z - param_gain;
+        }
       }
+      else
+      {
+        rtVec.linear.z = target.linear.z;
+      }
+      histry.linear.z = rtVec.linear.z;
+    }
 
-    }else{
-      rtVec.linear.z = target.linear.z;
-    }
-    histry.linear.z = rtVec.linear.z;
-    }
-    
     // angular x
-    if(angularxPr){
-    vec = target.angular.x - histry.angular.x;
-    vec = std::sqrt(vec * vec);
-    if(vec > param_gain){
-      if(target.angular.x > histry.angular.x){
-        rtVec.angular.x = histry.angular.x + param_gain;
+    if (angularxPr)
+    {
+      vec = target.angular.x - histry.angular.x;
+      vec = std::sqrt(vec * vec);
+      if (vec > param_gain)
+      {
+        if (target.angular.x > histry.angular.x)
+        {
+          rtVec.angular.x = histry.angular.x + param_gain;
+        }
+        else
+        {
+          rtVec.angular.x = histry.angular.x - param_gain;
+        }
       }
-      else{
-        rtVec.angular.x = histry.angular.x - param_gain;
+      else
+      {
+        rtVec.angular.x = target.angular.x;
       }
-
-    }else{
-      rtVec.angular.x = target.angular.x;
-    }
-    histry.angular.x = rtVec.angular.x;
+      histry.angular.x = rtVec.angular.x;
     }
 
     // angular y
-    if(angularyPr){
-    vec = target.angular.y - histry.angular.y;
-    vec = std::sqrt(vec * vec);
-    if(vec > param_gain){
-      if(target.angular.y > histry.angular.y){
-        rtVec.angular.y = histry.angular.y + param_gain;
-      }else{
-        rtVec.angular.y = histry.angular.y - param_gain;
+    if (angularyPr)
+    {
+      vec = target.angular.y - histry.angular.y;
+      vec = std::sqrt(vec * vec);
+      if (vec > param_gain)
+      {
+        if (target.angular.y > histry.angular.y)
+        {
+          rtVec.angular.y = histry.angular.y + param_gain;
+        }
+        else
+        {
+          rtVec.angular.y = histry.angular.y - param_gain;
+        }
       }
-
-    }else{
-      rtVec.angular.y = target.angular.y;
-    }
-    histry.angular.y = rtVec.angular.y;
+      else
+      {
+        rtVec.angular.y = target.angular.y;
+      }
+      histry.angular.y = rtVec.angular.y;
     }
 
     // angular z
-    if(angularzPr){
-    vec = target.angular.z - histry.angular.z;
-    vec = std::sqrt(vec * vec);
-    if(vec > param_gain){
-      if(target.angular.z > histry.angular.z){
-        rtVec.angular.z = histry.angular.z + param_gain;
-      }else{
-        rtVec.angular.z = histry.angular.z - param_gain;
+    if (angularzPr)
+    {
+      vec = target.angular.z - histry.angular.z;
+      vec = std::sqrt(vec * vec);
+      if (vec > param_gain)
+      {
+        if (target.angular.z > histry.angular.z)
+        {
+          rtVec.angular.z = histry.angular.z + param_gain;
+        }
+        else
+        {
+          rtVec.angular.z = histry.angular.z - param_gain;
+        }
       }
-
-    }else{
-      rtVec.angular.z = target.angular.z;
+      else
+      {
+        rtVec.angular.z = target.angular.z;
+      }
+      histry.angular.z = rtVec.angular.z;
     }
-    histry.angular.z = rtVec.angular.z;
-    }
-
 
     pub_vel->publish(rtVec);
   }
@@ -185,10 +218,10 @@ class motion_smoother : public rclcpp::Node
   bool angularzPr;
 };
 
-int main(int argc , char * argv[])
+int main(int argc, char *argv[])
 {
-    rclcpp::init(argc,argv);
-    rclcpp::spin(std::make_shared<motion_smoother>());
-    rclcpp::shutdown();
-    return 0;
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<motion_smoother>());
+  rclcpp::shutdown();
+  return 0;
 }

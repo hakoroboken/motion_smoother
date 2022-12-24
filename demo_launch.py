@@ -6,13 +6,13 @@ import os.path
 def generate_launch_description():
   return LaunchDescription([
     Node(
-          package='motion_smoother',
-            executable='motion_smoother',
-            parameters=[{'linear.x_p' : 'true'} , 
-                        {'linear.y_p' : 'true'} , 
-                        {'linear.z_p' : 'true'} , 
-                        {'angular.x_p' : 'true'} , 
-                        {'angular.y_p' : 'true'} ,
-                        {'angular.z_p' : 'true'}] ,
-        ),
-    ])
+      package='motion_smoother',
+      executable='motion_smoother',
+      parameters=[{'linear.x_p' : 'true'} , 
+                  {'linear.y_p' : 'true'} , 
+                  {'linear.z_p' : 'true'} , 
+                  {'angular.x_p' : 'true'} , 
+                  {'angular.y_p' : 'true'} ,
+                  {'angular.z_p' : 'true'}] ,
+      ),
+  ])
